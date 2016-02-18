@@ -1,0 +1,26 @@
+things to take care of:
+
+== class page ==
+
+- talk to Jim about whether super/sub relationship should be symmetric in backend (why isn't it?)
+
+== object property page ==
+
+- fix "inverse functional" -> 1 line
+- create hierarchy in following way:
+	- get list of all object properties
+	- iterate through list, checking if not subproperty of anything
+	- if so, add to new list (is a top property)
+	- create tree hierarchy for each item in the new list
+- talk to Jim about multiple domains and ranges
+- similar issue as classes with symmetric super/sub relationship
+- wider select box
+
+== class property page ==
+
+- make adding/editing subproperties, superproperties, eqproperties, domain, range work
+- more distinct shade of green for dataproperty
+- use setRangeDatatypeURI for range
+	- figure out a list of XML schema datatypes
+- similar hierarchy
+- wider select box
