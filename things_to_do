@@ -3,13 +3,13 @@ things to take care of:
 == class page ==
 
 - talk to Jim about whether super/sub relationship should be symmetric in backend (why isn't it?)
+- wider select box
 
 == object property page ==
 
 - fix "inverse functional" -> 1 line
 - talk to Jim about multiple domains and ranges
 - similar issue as classes with symmetric super/sub relationship
-- wider select box
 
 == data property page ==
 
