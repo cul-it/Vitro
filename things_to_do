@@ -11,7 +11,7 @@ things to take care of:
 - similar issue as classes with symmetric super/sub relationship
 - wider select box
 
-== class property page ==
+== data property page ==
 
 - make adding/editing subproperties, superproperties, eqproperties, domain, range work
 - more distinct shade of green for dataproperty
