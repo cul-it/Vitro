@@ -7,11 +7,6 @@ things to take care of:
 == object property page ==
 
 - fix "inverse functional" -> 1 line
-- create hierarchy in following way:
-	- get list of all object properties
-	- iterate through list, checking if not subproperty of anything
-	- if so, add to new list (is a top property)
-	- create tree hierarchy for each item in the new list
 - talk to Jim about multiple domains and ranges
 - similar issue as classes with symmetric super/sub relationship
 - wider select box
