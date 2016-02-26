@@ -16,7 +16,6 @@ things to take care of:
 - similar issue as classes with symmetric super/sub relationship
 - add inverses
 - display/update/publish level
-- no "Thing" if domain/range unspecified
 
 == data property page ==
 
