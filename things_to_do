@@ -3,19 +3,12 @@ things to take care of:
 == class page ==
 
 - talk to Jim about whether super/sub relationship should be symmetric in backend (why isn't it?)
-- wider select box
 - restrictions
-- scroll down automatically when clicking "add"
-- line break after word "ontology"
-- reduce size of font in right sidebar if possible
 
 == object property page ==
 
 - fix "inverse functional" -> 1 line
 - talk to Jim about multiple domains and ranges
-- similar issue as classes with symmetric super/sub relationship
-- add inverses
-- display/update/publish level
 
 == data property page ==
 
