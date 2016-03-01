@@ -4,6 +4,11 @@ things to take care of:
 
 - talk to Jim about whether super/sub relationship should be symmetric in backend (why isn't it?)
 - restrictions
+	- write JS callback
+	- test adding a restriction
+	*tomorrow*
+	- add autocomplete to inputs
+	- test deletion
 
 == object property page ==
 
