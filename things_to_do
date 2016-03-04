@@ -2,24 +2,26 @@ things to take care of:
 
 == class page ==
 
-- talk to Jim about whether super/sub relationship should be symmetric in backend (why isn't it?)
 - restrictions
-	- write JS callback
-	- test adding a restriction
 	*tomorrow*
-	- add autocomplete to inputs
-	- test deletion
+	- test addition/deletion
 
 == object property page ==
 
-- fix "inverse functional" -> 1 line
-- talk to Jim about multiple domains and ranges
+- "inverse functional" -> 1 line (low priority)
+- multiple domains and ranges?
 
 == data property page ==
 
 - make adding/editing subproperties, superproperties, eqproperties, domain, range work
-- more distinct shade of green for dataproperty
 - use setRangeDatatypeURI for range
 	- figure out a list of XML schema datatypes
-- similar hierarchy
-- wider select box
+- remove + when changing using updateData (check this for object property as well)
+- add class option data
+- showing super/sub/eq properties still not working. why?
+
+Problems still remaining:
+
+- adding restrictions. why aren't they persisting?
+- using setRangeDatatypeURI for range: how to get a list of these datatype URIs for presentation to the user in autocomplete?
+- problem with "cannot convert to OntProperty" error
