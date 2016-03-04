@@ -25,3 +25,10 @@ Problems still remaining:
 - adding restrictions. why aren't they persisting?
 - using setRangeDatatypeURI for range: how to get a list of these datatype URIs for presentation to the user in autocomplete?
 - problem with "cannot convert to OntProperty" error
+
+- edit data domain
+- edit data range
+- delete data domain
+- delete data range
+- check to see if setRangeEntityURI() does the right thing
+- get the range from the entity uri
