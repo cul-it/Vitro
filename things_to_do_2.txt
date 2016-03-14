@@ -1,0 +1,32 @@
+things that aren't implemented yet:
+
+- add new class
+- add individual of class
+
+things that don't work:
+
+- inverse properties
+- edit RDF label
+
+lower priority items:
+
+- property group
+- public description
+- example
+- collate by subclass
+- custom entry form
+- select from existing
+- root properties
+- show class with restrictions
+
+class
+
+- class group
+- RDF localname
+- short definition
+- example
+- editor description
+- show all individuals in this class
+- show asserted individuals
+- new instance to other class
+
