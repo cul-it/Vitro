@@ -33,4 +33,11 @@ public class SelectQueryHolder {
 		return new SelectQueryHolder(bound);
 	}
 
+	public SelectQueryHolder bindToValue(String name, String value) {
+		String regex = "\\?" + name + "\\b";
+		String replacement = '"' + value + '"';
+		String bound = queryString.replaceAll(regex, replacement);
+		return new SelectQueryHolder(bound);
+	}
+	
 }

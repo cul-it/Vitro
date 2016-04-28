@@ -3,26 +3,18 @@
 package edu.cornell.mannlib.vitro.webapp.utils.sparql;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
-import com.hp.hpl.jena.rdf.model.RDFNode;
 
 import edu.cornell.mannlib.vitro.webapp.rdfservice.RDFService;
 import edu.cornell.mannlib.vitro.webapp.rdfservice.impl.RDFServiceUtils;
 import edu.cornell.mannlib.vitro.webapp.utils.sparql.SelectQueryRunner.ExecutingSelectQueryContext;
 import edu.cornell.mannlib.vitro.webapp.utils.sparql.SelectQueryRunner.SelectQueryContext;
-import edu.cornell.mannlib.vitro.webapp.utils.sparql.SelectQueryRunner.StringResultsMapping;
-import edu.cornell.mannlib.vitro.webapp.utils.sparql.SelectQueryRunner.StringResultsMappingImpl;
 
 /**
  * An implementation of QueryContext based on an RDFService.
@@ -49,6 +41,12 @@ class RdfServiceQueryContext implements SelectQueryContext {
 	}
 
 	@Override
+	public RdfServiceQueryContext bindVariableToValue(String name, String value) {
+		return new RdfServiceQueryContext(rdfService, query.bindToValue(name,
+				value));
+	}
+
+	@Override
 	public ExecutingSelectQueryContext execute() {
 		return new RdfServiceExecutingQueryContext(rdfService, query);
 	}
@@ -67,59 +65,16 @@ class RdfServiceQueryContext implements SelectQueryContext {
 		@Override
 		public StringResultsMapping getStringFields(String... names) {
 			Set<String> fieldNames = new HashSet<>(Arrays.asList(names));
-			StringResultsMappingImpl mapping = new StringResultsMappingImpl();
 			try {
 				ResultSet results = RDFServiceUtils.sparqlSelectQuery(
 						query.getQueryString(), rdfService);
-				return mapResultsForQuery(results, fieldNames);
+				return new StringResultsMapping(results, fieldNames);
 			} catch (Exception e) {
 				log.error(
 						"problem while running query '"
 								+ query.getQueryString() + "'", e);
-			}
-			return mapping;
-		}
-
-		private StringResultsMapping mapResultsForQuery(ResultSet results,
-				Set<String> fieldNames) {
-			StringResultsMappingImpl mapping = new StringResultsMappingImpl();
-			while (results.hasNext()) {
-				Map<String, String> rowMapping = mapResultsForRow(
-						results.nextSolution(), fieldNames);
-				if (!rowMapping.isEmpty()) {
-					mapping.add(rowMapping);
-				}
-			}
-			return mapping;
-		}
-
-		private Map<String, String> mapResultsForRow(QuerySolution row,
-				Set<String> fieldNames) {
-			Map<String, String> map = new HashMap<>();
-			for (Iterator<String> names = row.varNames(); names.hasNext();) {
-				String name = names.next();
-				RDFNode node = row.get(name);
-				String text = getTextForNode(node);
-				if (StringUtils.isNotBlank(text)) {
-					map.put(name, text);
-				}
-			}
-			if (!fieldNames.isEmpty()) {
-				map.keySet().retainAll(fieldNames);
-			}
-			return map;
-		}
-
-		private String getTextForNode(RDFNode node) {
-			if (node == null) {
-				return "";
-			} else if (node.isLiteral()) {
-				return node.asLiteral().getString().trim();
-			} else {
-				return node.toString().trim();
+				return StringResultsMapping.EMPTY;
 			}
 		}
-
 	}
-
 }

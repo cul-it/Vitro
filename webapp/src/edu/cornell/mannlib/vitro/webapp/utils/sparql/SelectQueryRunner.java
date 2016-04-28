@@ -2,14 +2,10 @@
 
 package edu.cornell.mannlib.vitro.webapp.utils.sparql;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import com.hp.hpl.jena.rdf.model.Model;
 
 import edu.cornell.mannlib.vitro.webapp.rdfservice.RDFService;
 
@@ -26,10 +22,12 @@ import edu.cornell.mannlib.vitro.webapp.rdfservice.RDFService;
  * 
  *   SelectQueryHolder q = selectQuery(queryString)
  *                             .bindToUri("uri", uri));
- *   List<Map<String, String> map = createQueryContext(rdfService, q)
+ *   List<Map<String, String> map = createQueryContext(model, q)
  *                             .execute()
  *                             .getStringFields();
  * </pre>
+ * 
+ * The query context can come from either an RDFService or a Model.
  * 
  * The execute() method does not actually execute the query: it merely sets it
  * up syntactically.
@@ -61,44 +59,26 @@ public final class SelectQueryRunner {
 		return new RdfServiceQueryContext(rdfService, query);
 	}
 
+	public static SelectQueryContext createQueryContext(Model model,
+			String queryString) {
+		return createQueryContext(model, selectQuery(queryString));
+	}
+
+	public static SelectQueryContext createQueryContext(Model model,
+			SelectQueryHolder query) {
+		return new ModelQueryContext(model, query);
+	}
+
 	public static interface SelectQueryContext {
 		public SelectQueryContext bindVariableToUri(String name, String uri);
+
+		public SelectQueryContext bindVariableToValue(String name, String value);
 
 		public ExecutingSelectQueryContext execute();
 	}
 
 	public static interface ExecutingSelectQueryContext {
 		public StringResultsMapping getStringFields(String... fieldNames);
-	}
-
-	public static interface StringResultsMapping extends
-			List<Map<String, String>> {
-		public List<String> flatten();
-
-		public Set<String> flattenToSet();
-	}
-
-	// ----------------------------------------------------------------------
-	// Helper classes
-	// ----------------------------------------------------------------------
-
-	static class StringResultsMappingImpl extends
-			ArrayList<Map<String, String>> implements StringResultsMapping {
-
-		@Override
-		public List<String> flatten() {
-			List<String> flat = new ArrayList<>();
-			for (Map<String, String> map : this) {
-				flat.addAll(map.values());
-			}
-			return flat;
-		}
-
-		@Override
-		public Set<String> flattenToSet() {
-			return new HashSet<>(flatten());
-		}
-
 	}
 
 }
