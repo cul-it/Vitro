@@ -7,7 +7,6 @@ import static edu.cornell.mannlib.vitro.webapp.rdfservice.RDFService.ModelSerial
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
@@ -34,8 +33,8 @@ public class RdfServiceConstructQueryContext implements ConstructQueryContext {
 
 	@Override
 	public ConstructQueryContext bindVariableToUri(String name, String uri) {
-		return new RdfServiceConstructQueryContext(rdfService, query.bindToUri(
-				name, uri));
+		return new RdfServiceConstructQueryContext(rdfService,
+				query.bindToUri(name, uri));
 	}
 
 	@Override
@@ -55,8 +54,9 @@ public class RdfServiceConstructQueryContext implements ConstructQueryContext {
 		return "RdfServiceConstructQueryContext[query=" + query + "]";
 	}
 
-	private static class RdfServiceExecutingConstructQueryContext implements
-			ExecutingConstructQueryContext {
+	private static class RdfServiceExecutingConstructQueryContext
+			implements
+				ExecutingConstructQueryContext {
 		private final RDFService rdfService;
 		private final QueryHolder query;
 
@@ -68,20 +68,16 @@ public class RdfServiceConstructQueryContext implements ConstructQueryContext {
 
 		@Override
 		public Model toModel() {
-			QueryExecution qe = null;
 			try {
-				return RDFServiceUtils.parseModel(rdfService
-						.sparqlConstructQuery(query.getQueryString(), NTRIPLE),
-						NTRIPLE);
+				return RDFServiceUtils
+						.parseModel(
+								rdfService.sparqlConstructQuery(
+										query.getQueryString(), NTRIPLE),
+								NTRIPLE);
 			} catch (Exception e) {
-				log.error(
-						"problem while running query '"
-								+ query.getQueryString() + "'", e);
+				log.error("problem while running query '"
+						+ query.getQueryString() + "'", e);
 				return ModelFactory.createDefaultModel();
-			} finally {
-				if (qe != null) {
-					qe.close();
-				}
 			}
 		}
 

@@ -9,12 +9,6 @@ import static edu.cornell.mannlib.vitro.testing.ModelUtilitiesTestHelper.model;
 import static edu.cornell.mannlib.vitro.testing.ModelUtilitiesTestHelper.objectProperty;
 import static org.junit.Assert.assertEquals;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
 import org.junit.Before;
 import org.junit.Ignore;

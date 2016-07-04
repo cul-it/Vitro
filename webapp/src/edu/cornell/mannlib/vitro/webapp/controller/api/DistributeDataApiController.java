@@ -33,6 +33,8 @@ import edu.cornell.mannlib.vitro.webapp.utils.configuration.ConfigurationBeanLoa
 /**
  * Find a distributor description for the requested action. Create an instance
  * of that distributor. Write its data to the response.
+ * 
+ * See also edu/cornell/mannlib/vitro/webapp/controller/api/distribute/README.md
  */
 public class DistributeDataApiController extends VitroApiServlet {
 	private static final Log log = LogFactory
