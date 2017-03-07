@@ -23,7 +23,7 @@ import edu.cornell.mannlib.vitro.webapp.utils.sparqlrunner.SparqlQueryRunner.Con
  * Run a construct query to build the model. Bind parameters from the request,
  * as needed.
  */
-public class ConstructModelBuilder implements ModelBuilder {
+public class ConstructModelBuilder implements ResettableModelBuilder {
 	private static final Log log = LogFactory
 			.getLog(ConstructModelBuilder.class);
 
@@ -70,5 +70,10 @@ public class ConstructModelBuilder implements ModelBuilder {
 	public void close() {
 		// Nothing to do.
 	}
+
+    @Override
+    public void reset() {
+        // A single instance can be reused.
+    }
 
 }
