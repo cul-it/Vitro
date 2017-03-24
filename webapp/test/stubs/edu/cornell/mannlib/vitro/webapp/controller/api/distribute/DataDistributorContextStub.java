@@ -18,30 +18,46 @@ import stubs.edu.cornell.mannlib.vitro.webapp.modelaccess.RequestModelAccessStub
  * the RequestModelAccessStub.
  */
 public class DataDistributorContextStub implements DataDistributorContext {
-	private final RequestModelAccessStub models = new RequestModelAccessStub();
-	private Map<String, String[]> parameters = new HashMap<>();
+	// ----------------------------------------------------------------------
+    // Stub infrastructure
+    // ----------------------------------------------------------------------
 
-	public DataDistributorContextStub(Model model) {
-		models.setRDFService(new RDFServiceModel(model));
-	}
+    private final RequestModelAccessStub models = new RequestModelAccessStub();
+    private Map<String, String[]> parameters = new HashMap<>();
 
-	public void setParameter(String name, String value) {
-		parameters.put(name, new String[]{value});
-	}
+    public DataDistributorContextStub(Model model) {
+        models.setRDFService(new RDFServiceModel(model));
+    }
 
-	@Override
-	public Map<String, String[]> getRequestParameters() {
-		return parameters;
-	}
+    public void setParameter(String name, String value) {
+        parameters.put(name, new String[]{value});
+    }
 
-	@Override
-	public RequestModelAccess getRequestModels() {
-		return models;
-	}
+    public void removeParameter(String name) {
+        parameters.remove(name);
+    }
 
-	@Override
-	public boolean isAuthorized(AuthorizationRequest ar) {
-		return true;
-	}
+    // ----------------------------------------------------------------------
+    // Stub methods
+    // ----------------------------------------------------------------------
+
+    @Override
+    public Map<String, String[]> getRequestParameters() {
+        return parameters;
+    }
+
+    @Override
+    public RequestModelAccess getRequestModels() {
+        return models;
+    }
+
+    @Override
+    public boolean isAuthorized(AuthorizationRequest ar) {
+        return true;
+    }
+
+    // ----------------------------------------------------------------------
+    // Un-implemented methods
+    // ----------------------------------------------------------------------
 
 }
