@@ -72,404 +72,412 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
  */
 public abstract class AbstractTestClass {
 
-	// ----------------------------------------------------------------------
-	// Control the level of logging output.
-	// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // Control the level of logging output.
+    // ----------------------------------------------------------------------
 
-	/** The layout we use for logging. */
-	private static final PatternLayout patternLayout = new PatternLayout(
-			"%p %d{yyyy-MM-dd' 'HH:mm:ss.SSS} [%t] (%c{1}) %m%n");
+    /** The layout we use for logging. */
+    private static final PatternLayout patternLayout = new PatternLayout(
+            "%p %d{yyyy-MM-dd' 'HH:mm:ss.SSS} [%t] (%c{1}) %m%n");
 
-	/**
-	 * Unless modified, all Logging will be done to the console at
-	 * {@link Level#INFO}.
-	 */
-	@Before
-	@After
-	public void initializeLogging() {
-		LogManager.resetConfiguration();
-		Logger.getRootLogger().addAppender(new ConsoleAppender(patternLayout));
-		Logger.getRootLogger().setLevel(Level.INFO);
-	}
+    /**
+     * Unless modified, all Logging will be done to the console at
+     * {@link Level#INFO}.
+     */
+    @Before
+    @After
+    public void initializeLogging() {
+        LogManager.resetConfiguration();
+        Logger.getRootLogger().addAppender(new ConsoleAppender(patternLayout));
+        Logger.getRootLogger().setLevel(Level.INFO);
+    }
 
-	/**
-	 * Call this in a "@Before" or "@BeforeClass" method to change the logging
-	 * level of a particular class.
-	 */
-	protected static void setLoggerLevel(Class<?> clazz, Level level) {
-		Logger.getLogger(clazz).setLevel(level);
-	}
+    /**
+     * Call this in a "@Before" or "@BeforeClass" method to change the logging
+     * level of a particular class.
+     */
+    protected static void setLoggerLevel(Class<?> clazz, Level level) {
+        Logger.getLogger(clazz).setLevel(level);
+    }
 
-	/**
-	 * Same thing, but for a logger that is not named directly after a class.
-	 */
-	protected static void setLoggerLevel(String category, Level level) {
-		Logger.getLogger(category).setLevel(level);
-	}
+    /**
+     * Same thing, but for a logger that is not named directly after a class.
+     */
+    protected static void setLoggerLevel(String category, Level level) {
+        Logger.getLogger(category).setLevel(level);
+    }
 
-	/**
-	 * Capture the log for this class to this Writer. Choose whether or not to
-	 * suppress it from the console.
-	 */
-	protected void captureLogOutput(Class<?> clazz, Writer writer,
-			boolean suppress) {
-		PatternLayout layout = new PatternLayout("%p %m%n");
+    /**
+     * Capture the log for this class to this Writer. Choose whether or not to
+     * suppress it from the console.
+     */
+    protected void captureLogOutput(String loggerName, Writer writer,
+            boolean suppress) {
+        PatternLayout layout = new PatternLayout("%p %m%n");
 
-		ConsoleAppender appender = new ConsoleAppender();
-		appender.setWriter(writer);
-		appender.setLayout(layout);
+        ConsoleAppender appender = new ConsoleAppender();
+        appender.setWriter(writer);
+        appender.setLayout(layout);
 
-		Logger logger = Logger.getLogger(clazz);
-		logger.removeAllAppenders();
-		logger.setAdditivity(!suppress);
-		logger.addAppender(appender);
-	}
+        Logger logger = Logger.getLogger(loggerName);
+        logger.removeAllAppenders();
+        logger.setAdditivity(!suppress);
+        logger.addAppender(appender);
+    }
 
-	// ----------------------------------------------------------------------
-	// Control standard output or error output.
-	// ----------------------------------------------------------------------
+    /**
+     * Same thing, but for a logger that is not named directly after a class.
+     */
+    protected void captureLogOutput(Class<?> clazz, Writer writer,
+            boolean suppress) {
+        captureLogOutput(clazz.getName(), writer, suppress);
+    }
 
-	private static final PrintStream originalSysout = System.out;
-	private static final PrintStream originalSyserr = System.err;
-	private final ByteArrayOutputStream capturedSysout = new ByteArrayOutputStream();
-	private final ByteArrayOutputStream capturedSyserr = new ByteArrayOutputStream();
+    // ----------------------------------------------------------------------
+    // Control standard output or error output.
+    // ----------------------------------------------------------------------
 
-	@Before
-	@After
-	public void restoreOutputStreams() {
-		System.setOut(originalSysout);
-		System.setErr(originalSyserr);
-		capturedSysout.reset();
-		capturedSyserr.reset();
-	}
+    private static final PrintStream originalSysout = System.out;
+    private static final PrintStream originalSyserr = System.err;
+    private final ByteArrayOutputStream capturedSysout = new ByteArrayOutputStream();
+    private final ByteArrayOutputStream capturedSyserr = new ByteArrayOutputStream();
 
-	protected void suppressSysout() {
-		System.setOut(new PrintStream(capturedSysout, true));
-	}
+    @Before
+    @After
+    public void restoreOutputStreams() {
+        System.setOut(originalSysout);
+        System.setErr(originalSyserr);
+        capturedSysout.reset();
+        capturedSyserr.reset();
+    }
 
-	protected void suppressSyserr() {
-		System.setErr(new PrintStream(capturedSyserr, true));
-	}
+    protected void suppressSysout() {
+        System.setOut(new PrintStream(capturedSysout, true));
+    }
 
-	protected String getSysoutForTest() {
-		return capturedSysout.toString();
-	}
+    protected void suppressSyserr() {
+        System.setErr(new PrintStream(capturedSyserr, true));
+    }
 
-	protected String getSyserrForTest() {
-		return capturedSyserr.toString();
-	}
+    protected String getSysoutForTest() {
+        return capturedSysout.toString();
+    }
 
-	// ----------------------------------------------------------------------
-	// Set values on System properties for individual tests.
-	// ----------------------------------------------------------------------
+    protected String getSyserrForTest() {
+        return capturedSyserr.toString();
+    }
 
-	private static Properties originalSystemProperties = (Properties) System
-			.getProperties().clone();
+    // ----------------------------------------------------------------------
+    // Set values on System properties for individual tests.
+    // ----------------------------------------------------------------------
 
-	@Before
-	@After
-	public void restoreSystemProperties() {
-		System.setProperties((Properties) originalSystemProperties.clone());
-	}
+    private static Properties originalSystemProperties = (Properties) System
+            .getProperties().clone();
 
-	// ----------------------------------------------------------------------
-	// Manage temporary files.
-	// ----------------------------------------------------------------------
+    @Before
+    @After
+    public void restoreSystemProperties() {
+        System.setProperties((Properties) originalSystemProperties.clone());
+    }
 
-	/**
-	 * Delete a file, either before or after the test. If it can't be deleted,
-	 * complain.
-	 */
-	protected static void deleteFile(File file) {
-		if (file.exists()) {
-			file.delete();
-		}
-		if (!file.exists()) {
-			return;
-		}
+    // ----------------------------------------------------------------------
+    // Manage temporary files.
+    // ----------------------------------------------------------------------
 
-		/*
-		 * If we were unable to delete the file, is it because it's a non-empty
-		 * directory?
-		 */
-		if (!file.isDirectory()) {
-			final StringBuffer message = new StringBuffer(
-					"Unable to delete directory '" + file.getPath() + "'\n");
-			file.listFiles(new FileFilter() {
-				@Override
-				public boolean accept(File pathname) {
-					message.append("   contains file '" + pathname + "'\n");
-					return true;
-				}
-			});
-			fail(message.toString().trim());
-		} else {
-			fail("Unable to delete file '" + file.getPath() + "'");
-		}
-	}
+    /**
+     * Delete a file, either before or after the test. If it can't be deleted,
+     * complain.
+     */
+    protected static void deleteFile(File file) {
+        if (file.exists()) {
+            file.delete();
+        }
+        if (!file.exists()) {
+            return;
+        }
 
-	/**
-	 * Delete all of the files in a directory, and the directory itself. Will
-	 * not work if there are sub-directories.
-	 */
-	protected static void purgeDirectory(File directory) {
-		if (directory.exists()) {
-			File[] files = directory.listFiles();
-			for (File file : files) {
-				if (file.isDirectory()) {
-					fail("Directory '" + directory
-							+ "' contains at least one nested directory.");
-				}
-			}
-			for (File file : files) {
-				deleteFile(file);
-			}
-			deleteFile(directory);
-		}
-	}
+        /*
+         * If we were unable to delete the file, is it because it's a non-empty
+         * directory?
+         */
+        if (!file.isDirectory()) {
+            final StringBuffer message = new StringBuffer(
+                    "Unable to delete directory '" + file.getPath() + "'\n");
+            file.listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    message.append("   contains file '" + pathname + "'\n");
+                    return true;
+                }
+            });
+            fail(message.toString().trim());
+        } else {
+            fail("Unable to delete file '" + file.getPath() + "'");
+        }
+    }
 
-	/**
-	 * Delete all of the files in a directory, any sub-directories, and the
-	 * directory itself.
-	 */
-	protected static void purgeDirectoryRecursively(File directory) {
-		if (directory.exists()) {
-			File[] files = directory.listFiles();
-			for (File file : files) {
-				if (file.isDirectory()) {
-					purgeDirectoryRecursively(file);
-				} else {
-					deleteFile(file);
-				}
-			}
-			deleteFile(directory);
-		}
-	}
+    /**
+     * Delete all of the files in a directory, and the directory itself. Will
+     * not work if there are sub-directories.
+     */
+    protected static void purgeDirectory(File directory) {
+        if (directory.exists()) {
+            File[] files = directory.listFiles();
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    fail("Directory '" + directory
+                            + "' contains at least one nested directory.");
+                }
+            }
+            for (File file : files) {
+                deleteFile(file);
+            }
+            deleteFile(directory);
+        }
+    }
 
-	/**
-	 * Create a directory of a given name inside the Temp directory. If such a
-	 * directory already exists, purge it and its contents and create it fresh.
-	 */
-	protected static File createTempDirectory(String name) throws IOException {
-		File tempDirectory = new File(System.getProperty("java.io.tmpdir"),
-				name);
+    /**
+     * Delete all of the files in a directory, any sub-directories, and the
+     * directory itself.
+     */
+    protected static void purgeDirectoryRecursively(File directory) {
+        if (directory.exists()) {
+            File[] files = directory.listFiles();
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    purgeDirectoryRecursively(file);
+                } else {
+                    deleteFile(file);
+                }
+            }
+            deleteFile(directory);
+        }
+    }
 
-		// If it already exists, remove it, so we start clean.
-		if (tempDirectory.exists()) {
-			purgeDirectoryRecursively(tempDirectory);
-		}
+    /**
+     * Create a directory of a given name inside the Temp directory. If such a
+     * directory already exists, purge it and its contents and create it fresh.
+     */
+    protected static File createTempDirectory(String name) throws IOException {
+        File tempDirectory = new File(System.getProperty("java.io.tmpdir"),
+                name);
 
-		if (!tempDirectory.mkdir()) {
-			throw new IOException("failed to create temp directory '"
-					+ tempDirectory.getPath() + "'");
-		}
+        // If it already exists, remove it, so we start clean.
+        if (tempDirectory.exists()) {
+            purgeDirectoryRecursively(tempDirectory);
+        }
 
-		return tempDirectory;
-	}
+        if (!tempDirectory.mkdir()) {
+            throw new IOException("failed to create temp directory '"
+                    + tempDirectory.getPath() + "'");
+        }
 
-	// ----------------------------------------------------------------------
-	// A better way of handling expected exceptions.
-	// ----------------------------------------------------------------------
+        return tempDirectory;
+    }
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+    // ----------------------------------------------------------------------
+    // A better way of handling expected exceptions.
+    // ----------------------------------------------------------------------
 
-	protected void expectException(Class<? extends Throwable> type,
-			String messageSubstring) {
-		exception.expect(type);
-		exception.expectMessage(messageSubstring);
-	}
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
-	protected void expectException(Class<? extends Throwable> type,
-			Matcher<String> messageMatcher) {
-		exception.expect(type);
-		exception.expectMessage(messageMatcher);
-	}
+    protected void expectException(Class<? extends Throwable> type,
+            String messageSubstring) {
+        exception.expect(type);
+        exception.expectMessage(messageSubstring);
+    }
 
-	protected void expectExceptionCause(Class<? extends Throwable> type,
-			String messageSubstring) {
-		exception.expectCause(Matchers.<Throwable> instanceOf(type));
-		exception.expectCause(Matchers.<Throwable> hasProperty("message",
-				containsString(messageSubstring)));
-	}
+    protected void expectException(Class<? extends Throwable> type,
+            Matcher<String> messageMatcher) {
+        exception.expect(type);
+        exception.expectMessage(messageMatcher);
+    }
 
-	protected void expectExceptionCause(Class<? extends Throwable> type,
-			Matcher<String> messageMatcher) {
-		exception.expectCause(Matchers.<Throwable> instanceOf(type));
-		exception.expectCause(Matchers.<Throwable> hasProperty("message",
-				messageMatcher));
-	}
+    protected void expectExceptionCause(Class<? extends Throwable> type,
+            String messageSubstring) {
+        exception.expectCause(Matchers.<Throwable>instanceOf(type));
+        exception.expectCause(Matchers.<Throwable>hasProperty("message",
+                containsString(messageSubstring)));
+    }
 
-	protected void expectException(Class<? extends Throwable> clazz,
-			String messageSubstring, Class<? extends Throwable> causeClazz,
-			String causeMessageSubstring) {
-		expectException(clazz, messageSubstring);
-		expectExceptionCause(causeClazz, causeMessageSubstring);
-	}
+    protected void expectExceptionCause(Class<? extends Throwable> type,
+            Matcher<String> messageMatcher) {
+        exception.expectCause(Matchers.<Throwable>instanceOf(type));
+        exception.expectCause(
+                Matchers.<Throwable>hasProperty("message", messageMatcher));
+    }
 
-	// ----------------------------------------------------------------------
-	// Other utilities.
-	// ----------------------------------------------------------------------
+    protected void expectException(Class<? extends Throwable> clazz,
+            String messageSubstring, Class<? extends Throwable> causeClazz,
+            String causeMessageSubstring) {
+        expectException(clazz, messageSubstring);
+        expectExceptionCause(causeClazz, causeMessageSubstring);
+    }
 
-	/**
-	 * Create a file and fill it with the contents provided.
-	 */
-	protected static File createFile(File directory, String filename,
-			String contents) throws IOException {
-		Writer writer = null;
-		try {
-			File file = new File(directory, filename);
-			if (file.exists()) {
-				throw new IOException("File '" + file.getPath()
-						+ "' already exists.");
-			}
-			file.createNewFile();
-			writer = new FileWriter(file);
-			writer.write(contents);
-			return file;
-		} finally {
-			if (writer != null) {
-				try {
-					writer.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
+    // ----------------------------------------------------------------------
+    // Other utilities.
+    // ----------------------------------------------------------------------
 
-	/**
-	 * Read the entire contents of a file, or throw an exception if it's not
-	 * there.
-	 */
-	protected static String readFile(File file) throws IOException {
-		if (!file.exists()) {
-			throw new IOException("file '" + file.getPath() + "' ('"
-					+ file.getAbsolutePath() + "') does not exist.");
-		}
-		FileReader fileReader = new FileReader(file);
-		String result = readAll(fileReader);
-		return result;
-	}
+    /**
+     * Create a file and fill it with the contents provided.
+     */
+    protected static File createFile(File directory, String filename,
+            String contents) throws IOException {
+        Writer writer = null;
+        try {
+            File file = new File(directory, filename);
+            if (file.exists()) {
+                throw new IOException(
+                        "File '" + file.getPath() + "' already exists.");
+            }
+            file.createNewFile();
+            writer = new FileWriter(file);
+            writer.write(contents);
+            return file;
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
-	/**
-	 * Suck all the data from a {@link Reader} into a {@link String}.
-	 */
-	protected static String readAll(Reader reader) throws IOException {
-		StringBuilder result = new StringBuilder();
-		BufferedReader buffered = new BufferedReader(reader);
-		char[] chunk = new char[4096];
-		int howMany;
+    /**
+     * Read the entire contents of a file, or throw an exception if it's not
+     * there.
+     */
+    protected static String readFile(File file) throws IOException {
+        if (!file.exists()) {
+            throw new IOException("file '" + file.getPath() + "' ('"
+                    + file.getAbsolutePath() + "') does not exist.");
+        }
+        FileReader fileReader = new FileReader(file);
+        String result = readAll(fileReader);
+        return result;
+    }
 
-		try {
-			while (-1 != (howMany = buffered.read(chunk))) {
-				result.append(chunk, 0, howMany);
-			}
-		} finally {
-			reader.close();
-		}
+    /**
+     * Suck all the data from a {@link Reader} into a {@link String}.
+     */
+    protected static String readAll(Reader reader) throws IOException {
+        StringBuilder result = new StringBuilder();
+        BufferedReader buffered = new BufferedReader(reader);
+        char[] chunk = new char[4096];
+        int howMany;
 
-		return result.toString();
-	}
+        try {
+            while (-1 != (howMany = buffered.read(chunk))) {
+                result.append(chunk, 0, howMany);
+            }
+        } finally {
+            reader.close();
+        }
 
-	/**
-	 * Suck all the data from a {@link InputStream} into a {@link String}.
-	 */
-	protected static String readAll(InputStream stream) throws IOException {
-		return readAll(new InputStreamReader(stream));
-	}
+        return result.toString();
+    }
 
-	/**
-	 * Convert a string to a URL without a checked exception.
-	 */
-	protected static URL url(String string) {
-		try {
-			return new URL(string);
-		} catch (MalformedURLException e) {
-			throw new IllegalArgumentException(e);
-		}
-	}
+    /**
+     * Suck all the data from a {@link InputStream} into a {@link String}.
+     */
+    protected static String readAll(InputStream stream) throws IOException {
+        return readAll(new InputStreamReader(stream));
+    }
 
-	/**
-	 * Read each string into an XML document and then write it again. This
-	 * should discard any differences that are not syntactically significant.
-	 * Will they be identical?
-	 */
-	protected void assertEquivalentXmlDocs(String string1, String string2) {
-		String out1 = launderXmlDocument(string1);
-		String out2 = launderXmlDocument(string2);
-		if (!out1.equals(out2)) {
-			fail("XML documents are not equivalent: expected <" + string1
-					+ "> but was <" + string2 + ">");
-		}
-	}
+    /**
+     * Convert a string to a URL without a checked exception.
+     */
+    protected static URL url(String string) {
+        try {
+            return new URL(string);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
 
-	/**
-	 * Read a string of XML into a document and write it again. This should
-	 * result in a canonical form that can be compared to other such strings.
-	 */
-	private String launderXmlDocument(String docString) {
-		StringWriter result = new StringWriter();
-		try {
-			DocumentBuilderFactory bFactory = DocumentBuilderFactory
-					.newInstance();
-			DocumentBuilder builder = bFactory.newDocumentBuilder();
+    /**
+     * Read each string into an XML document and then write it again. This
+     * should discard any differences that are not syntactically significant.
+     * Will they be identical?
+     */
+    protected void assertEquivalentXmlDocs(String string1, String string2) {
+        String out1 = launderXmlDocument(string1);
+        String out2 = launderXmlDocument(string2);
+        if (!out1.equals(out2)) {
+            fail("XML documents are not equivalent: expected <" + string1
+                    + "> but was <" + string2 + ">");
+        }
+    }
 
-			TransformerFactory xFactory = TransformerFactory.newInstance();
-			Transformer xformer = xFactory.newTransformer();
+    /**
+     * Read a string of XML into a document and write it again. This should
+     * result in a canonical form that can be compared to other such strings.
+     */
+    private String launderXmlDocument(String docString) {
+        StringWriter result = new StringWriter();
+        try {
+            DocumentBuilderFactory bFactory = DocumentBuilderFactory
+                    .newInstance();
+            DocumentBuilder builder = bFactory.newDocumentBuilder();
 
-			StringReader reader = new StringReader(docString);
-			Document doc = builder.parse(new InputSource(reader));
-			xformer.transform(new DOMSource(doc), new StreamResult(result));
-		} catch (ParserConfigurationException e) {
-			fail(e.toString());
-		} catch (SAXException e) {
-			fail(e.toString());
-		} catch (IOException e) {
-			fail(e.toString());
-		} catch (TransformerException e) {
-			fail(e.toString());
-		}
-		return result.toString().replaceAll(">\\s+<", "><");
-	}
+            TransformerFactory xFactory = TransformerFactory.newInstance();
+            Transformer xformer = xFactory.newTransformer();
 
-	protected <T extends Comparable<T>> void assertEqualSets(String label,
-			Set<T> expected, Set<T> actual) {
-		if (expected.equals(actual)) {
-			return;
-		}
+            StringReader reader = new StringReader(docString);
+            Document doc = builder.parse(new InputSource(reader));
+            xformer.transform(new DOMSource(doc), new StreamResult(result));
+        } catch (ParserConfigurationException e) {
+            fail(e.toString());
+        } catch (SAXException e) {
+            fail(e.toString());
+        } catch (IOException e) {
+            fail(e.toString());
+        } catch (TransformerException e) {
+            fail(e.toString());
+        }
+        return result.toString().replaceAll(">\\s+<", "><");
+    }
 
-		Set<T> missing = new TreeSet<T>(expected);
-		missing.removeAll(actual);
-		Set<T> extras = new TreeSet<T>(actual);
-		extras.removeAll(expected);
+    protected <T extends Comparable<T>> void assertEqualSets(String label,
+            Set<T> expected, Set<T> actual) {
+        if (expected.equals(actual)) {
+            return;
+        }
 
-		String message = label;
-		if (!missing.isEmpty()) {
-			message += ", missing: " + missing;
-		}
-		if (!extras.isEmpty()) {
-			message += ", extra: " + extras;
-		}
-		assertEquals(message, expected, actual);
-	}
+        Set<T> missing = new TreeSet<T>(expected);
+        missing.removeAll(actual);
+        Set<T> extras = new TreeSet<T>(actual);
+        extras.removeAll(expected);
 
-	@SuppressWarnings("unchecked")
-	protected <T> Set<T> buildSet(T... array) {
-		return new HashSet<T>(Arrays.asList(array));
-	}
+        String message = label;
+        if (!missing.isEmpty()) {
+            message += ", missing: " + missing;
+        }
+        if (!extras.isEmpty()) {
+            message += ", extra: " + extras;
+        }
+        assertEquals(message, expected, actual);
+    }
 
-	protected OntModel readModelFromFile(String relativePath, String rdfType)
-			throws IOException {
-		InputStream stream = this.getClass().getResourceAsStream(relativePath);
-		Model model = ModelFactory.createDefaultModel();
-		model.read(stream, null, rdfType);
-		stream.close();
+    @SuppressWarnings("unchecked")
+    protected <T> Set<T> buildSet(T... array) {
+        return new HashSet<T>(Arrays.asList(array));
+    }
 
-		OntModel ontModel = ModelFactory.createOntologyModel(
-				OntModelSpec.OWL_DL_MEM, model);
-		ontModel.prepare();
-		return ontModel;
-	}
+    protected OntModel readModelFromFile(String relativePath, String rdfType)
+            throws IOException {
+        InputStream stream = this.getClass().getResourceAsStream(relativePath);
+        Model model = ModelFactory.createDefaultModel();
+        model.read(stream, null, rdfType);
+        stream.close();
+
+        OntModel ontModel = ModelFactory
+                .createOntologyModel(OntModelSpec.OWL_DL_MEM, model);
+        ontModel.prepare();
+        return ontModel;
+    }
 
 }

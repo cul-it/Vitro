@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
@@ -30,6 +33,8 @@ import edu.cornell.mannlib.vitro.webapp.utils.configuration.Property;
  * list.
  */
 public class DrillDownModelBuilder implements ResettableModelBuilder {
+private static final Log log = LogFactory.getLog(DrillDownModelBuilder.class);
+
 
     private List<ModelBuilder> topLevelModelBuilders = new ArrayList<>();
     private String drillDownQuery;
@@ -77,7 +82,8 @@ public class DrillDownModelBuilder implements ResettableModelBuilder {
             DataDistributorContext context) throws DataDistributorException {
         try {
             mb.init(context);
-            return mb.buildModel();
+            Model model = mb.buildModel();
+            return model;
         } finally {
             mb.close();
         }
