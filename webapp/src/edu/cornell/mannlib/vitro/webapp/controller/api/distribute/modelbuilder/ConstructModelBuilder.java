@@ -11,7 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.hp.hpl.jena.rdf.model.Model;
-
+import static edu.cornell.mannlib.vitro.webapp.controller.api.distribute.modelbuilder.DrillDownModelBuilder.formatParameters;
 import edu.cornell.mannlib.vitro.webapp.controller.api.distribute.DataDistributor.DataDistributorException;
 import edu.cornell.mannlib.vitro.webapp.controller.api.distribute.DataDistributorContext;
 import edu.cornell.mannlib.vitro.webapp.controller.api.distribute.VariableBinder;
@@ -51,6 +51,7 @@ public class ConstructModelBuilder implements ResettableModelBuilder {
 	@Override
 	public void init(DataDistributorContext ddContext)
 			throws DataDistributorException {
+	    log.debug("PARAMETERS: " + formatParameters(ddContext.getRequestParameters()));
 		this.models = ddContext.getRequestModels();
 		this.binder = new VariableBinder(ddContext.getRequestParameters());
 	}
