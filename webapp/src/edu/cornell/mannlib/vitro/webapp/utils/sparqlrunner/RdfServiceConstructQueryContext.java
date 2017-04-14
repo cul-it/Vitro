@@ -7,6 +7,7 @@ import static edu.cornell.mannlib.vitro.webapp.rdfservice.RDFService.ModelSerial
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
@@ -19,67 +20,73 @@ import edu.cornell.mannlib.vitro.webapp.utils.sparqlrunner.SparqlQueryRunner.Exe
  * TODO
  */
 public class RdfServiceConstructQueryContext implements ConstructQueryContext {
-	private static final Log log = LogFactory
-			.getLog(RdfServiceConstructQueryContext.class);
+    private static final Log log = LogFactory
+            .getLog(RdfServiceConstructQueryContext.class);
 
-	private final RDFService rdfService;
-	private final QueryHolder query;
+    private final RDFService rdfService;
+    private final QueryHolder query;
 
-	public RdfServiceConstructQueryContext(RDFService rdfService,
-			QueryHolder query) {
-		this.rdfService = rdfService;
-		this.query = query;
-	}
+    public RdfServiceConstructQueryContext(RDFService rdfService,
+            QueryHolder query) {
+        this.rdfService = rdfService;
+        this.query = query;
+    }
 
-	@Override
-	public ConstructQueryContext bindVariableToUri(String name, String uri) {
-		return new RdfServiceConstructQueryContext(rdfService,
-				query.bindToUri(name, uri));
-	}
+    @Override
+    public ConstructQueryContext bindVariableToUri(String name, String uri) {
+        return new RdfServiceConstructQueryContext(rdfService,
+                query.bindToUri(name, uri));
+    }
 
-	@Override
-	public ConstructQueryContext bindVariableToPlainLiteral(String name,
-			String value) {
-		return new RdfServiceConstructQueryContext(rdfService,
-				query.bindToPlainLiteral(name, value));
-	}
+    @Override
+    public ConstructQueryContext bindVariableToPlainLiteral(String name,
+            String value) {
+        return new RdfServiceConstructQueryContext(rdfService,
+                query.bindToPlainLiteral(name, value));
+    }
 
-	@Override
-	public ExecutingConstructQueryContext execute() {
-		return new RdfServiceExecutingConstructQueryContext(rdfService, query);
-	}
+    @Override
+    public ConstructQueryContext bindVariableToLiteral(String name,
+            Literal literal) {
+        return new RdfServiceConstructQueryContext(rdfService,
+                query.bindToLiteral(name, literal));
+    }
 
-	@Override
-	public String toString() {
-		return "RdfServiceConstructQueryContext[query=" + query + "]";
-	}
+    @Override
+    public ExecutingConstructQueryContext execute() {
+        return new RdfServiceExecutingConstructQueryContext(rdfService, query);
+    }
 
-	private static class RdfServiceExecutingConstructQueryContext
-			implements
-				ExecutingConstructQueryContext {
-		private final RDFService rdfService;
-		private final QueryHolder query;
+    @Override
+    public String toString() {
+        return "RdfServiceConstructQueryContext[query=" + query + "]";
+    }
 
-		public RdfServiceExecutingConstructQueryContext(RDFService rdfService,
-				QueryHolder query) {
-			this.rdfService = rdfService;
-			this.query = query;
-		}
+    private static class RdfServiceExecutingConstructQueryContext
+            implements ExecutingConstructQueryContext {
+        private final RDFService rdfService;
+        private final QueryHolder query;
 
-		@Override
-		public Model toModel() {
-			try {
-				return RDFServiceUtils
-						.parseModel(
-								rdfService.sparqlConstructQuery(
-										query.getQueryString(), NTRIPLE),
-								NTRIPLE);
-			} catch (Exception e) {
-				log.error("problem while running query '"
-						+ query.getQueryString() + "'", e);
-				return ModelFactory.createDefaultModel();
-			}
-		}
+        public RdfServiceExecutingConstructQueryContext(RDFService rdfService,
+                QueryHolder query) {
+            this.rdfService = rdfService;
+            this.query = query;
+        }
 
-	}
+        @Override
+        public Model toModel() {
+            try {
+                return RDFServiceUtils
+                        .parseModel(
+                                rdfService.sparqlConstructQuery(
+                                        query.getQueryString(), NTRIPLE),
+                                NTRIPLE);
+            } catch (Exception e) {
+                log.error("problem while running query '"
+                        + query.getQueryString() + "'", e);
+                return ModelFactory.createDefaultModel();
+            }
+        }
+
+    }
 }

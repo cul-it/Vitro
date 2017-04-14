@@ -5,9 +5,12 @@ package edu.cornell.mannlib.vitro.webapp.controller.api.distribute.modelbuilder;
 import static edu.cornell.mannlib.vitro.webapp.utils.sparqlrunner.SparqlQueryRunner.createSelectQueryContext;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
@@ -33,12 +36,14 @@ import edu.cornell.mannlib.vitro.webapp.utils.configuration.Property;
  * list.
  */
 public class DrillDownModelBuilder implements ResettableModelBuilder {
-private static final Log log = LogFactory.getLog(DrillDownModelBuilder.class);
-
-
+    private static final Log log = LogFactory
+            .getLog(DrillDownModelBuilder.class);
+    
     private List<ModelBuilder> topLevelModelBuilders = new ArrayList<>();
     private String drillDownQuery;
-    private List<ResettableModelBuilder> drillDownModelBuilders = new ArrayList<>();
+    private List<ResettableModelBuilder> bottomLevelModelBuilders = new ArrayList<>();
+    protected Set<String> uriBindingNames = new HashSet<>();
+    protected Set<String> literalBindingNames = new HashSet<>();
 
     @Property(uri = "http://vitro.mannlib.cornell.edu/ns/vitro/ApplicationSetup#topLevelModelBuilder", minOccurs = 1)
     public void addTopLevelModelBuilder(ModelBuilder builder) {
@@ -46,20 +51,32 @@ private static final Log log = LogFactory.getLog(DrillDownModelBuilder.class);
     }
 
     @Property(uri = "http://vitro.mannlib.cornell.edu/ns/vitro/ApplicationSetup#drillDownQuery", minOccurs = 1, maxOccurs = 1)
-    public void addDrillDownQuery(String query) {
+    public void setDrillDownQuery(String query) {
         drillDownQuery = query;
     }
 
-    @Property(uri = "http://vitro.mannlib.cornell.edu/ns/vitro/ApplicationSetup#drillDownModelBuilder", minOccurs = 1)
-    public void addDrillDownModelBuilder(ResettableModelBuilder builder) {
-        drillDownModelBuilders.add(builder);
+    @Property(uri = "http://vitro.mannlib.cornell.edu/ns/vitro/ApplicationSetup#bottomLevelModelBuilder", minOccurs = 1)
+    public void addBottomLevelModelBuilder(ResettableModelBuilder builder) {
+        bottomLevelModelBuilders.add(builder);
     }
+    
+    @Property(uri = "http://vitro.mannlib.cornell.edu/ns/vitro/ApplicationSetup#uriBinding")
+    public void addUriBindingName(String uriBindingName) {
+        this.uriBindingNames.add(uriBindingName);
+    }
+
+    @Property(uri = "http://vitro.mannlib.cornell.edu/ns/vitro/ApplicationSetup#literalBinding")
+    public void addLiteralBindingName(String literalBindingName) {
+        this.literalBindingNames.add(literalBindingName);
+    }
+
 
     private DataDistributorContext ddContext;
 
     @Override
     public void init(DataDistributorContext ddc)
             throws DataDistributorException {
+        log.debug("DRILLING: " + formatParameters(ddc.getRequestParameters()));
         this.ddContext = ddc;
     }
 
@@ -71,7 +88,7 @@ private static final Log log = LogFactory.getLog(DrillDownModelBuilder.class);
         }
         for (Map<String, String> drillDownParameters : getDrillDownParameterMaps(
                 m)) {
-            for (ResettableModelBuilder mb : drillDownModelBuilders) {
+            for (ResettableModelBuilder mb : bottomLevelModelBuilders) {
                 m.add(runDrillDownModelBuilder(mb, drillDownParameters));
             }
         }
@@ -83,6 +100,8 @@ private static final Log log = LogFactory.getLog(DrillDownModelBuilder.class);
         try {
             mb.init(context);
             Model model = mb.buildModel();
+            // log.warn("Running the model builder: parameters="
+            // + context.getRequestParameters() + ", size=" + model.size());
             return model;
         } finally {
             mb.close();
@@ -91,8 +110,10 @@ private static final Log log = LogFactory.getLog(DrillDownModelBuilder.class);
 
     private List<Map<String, String>> getDrillDownParameterMaps(
             Model localModel) {
-        return createSelectQueryContext(localModel, drillDownQuery).execute()
-                .toStringFields().getListOfMaps();
+        List<Map<String, String>> listOfMaps = createSelectQueryContext(localModel, drillDownQuery).execute()
+                        .toStringFields().getListOfMaps();
+        log.debug("SELECT QUERY RESULTS: " + listOfMaps);
+        return listOfMaps;
     }
 
     private Model runDrillDownModelBuilder(ResettableModelBuilder mb,
@@ -152,4 +173,13 @@ private static final Log log = LogFactory.getLog(DrillDownModelBuilder.class);
         }
 
     }
+    
+    public static String formatParameters(Map<String, String[]> map) {
+        Map<String, List<String>> lists = new HashMap<>();
+        for (String key : map.keySet()) {
+            lists.put(key, Arrays.asList(map.get(key)));
+        }
+        return lists.toString();
+    }
+
 }

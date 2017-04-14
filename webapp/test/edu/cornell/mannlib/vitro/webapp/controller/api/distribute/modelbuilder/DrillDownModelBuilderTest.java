@@ -78,7 +78,7 @@ public class DrillDownModelBuilderTest extends AbstractTestClass {
 
         instance = new DrillDownModelBuilder();
         instance.addTopLevelModelBuilder(topLevel);
-        instance.addDrillDownModelBuilder(bottomLevel);
+        instance.addBottomLevelModelBuilder(bottomLevel);
 
         models = new RequestModelAccessStub();
         ddc = new MockDataDistributorContext(models,
@@ -146,7 +146,7 @@ public class DrillDownModelBuilderTest extends AbstractTestClass {
     @Test
     public void twoBottomLevelBuilders() throws DataDistributorException {
         RecordingMockModelBuilder bottomLevel2 = new RecordingMockModelBuilder();
-        instance.addDrillDownModelBuilder(bottomLevel2);
+        instance.addBottomLevelModelBuilder(bottomLevel2);
 
         topLevel.setResponseStatements(typeStatement(SUBJECT_1_URI, TYPE_URI));
         bottomLevel.setResponseStatements(
@@ -220,7 +220,7 @@ public class DrillDownModelBuilderTest extends AbstractTestClass {
     private Model executeDrillDown(String selectQuery)
             throws DataDistributorException {
         try {
-            instance.addDrillDownQuery(selectQuery);
+            instance.setDrillDownQuery(selectQuery);
             instance.init(ddc);
             return instance.buildModel();
         } finally {

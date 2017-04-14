@@ -11,78 +11,74 @@ import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 
-import edu.cornell.mannlib.vitro.webapp.utils.sparqlrunner.SparqlQueryRunner.ConstructQueryContext;
-import edu.cornell.mannlib.vitro.webapp.utils.sparqlrunner.SparqlQueryRunner.ExecutingConstructQueryContext;
+import edu.cornell.mannlib.vitro.webapp.utils.sparqlrunner.SparqlQueryRunner.AskQueryContext;
+import edu.cornell.mannlib.vitro.webapp.utils.sparqlrunner.SparqlQueryRunner.ExecutingAskQueryContext;
 
 /**
  * TODO
  */
-public class ModelConstructQueryContext implements ConstructQueryContext {
+public class ModelAskQueryContext implements AskQueryContext {
     private static final Log log = LogFactory
-            .getLog(ModelConstructQueryContext.class);
+            .getLog(ModelAskQueryContext.class);
 
     private final Model model;
     private final QueryHolder query;
 
-    public ModelConstructQueryContext(Model model, QueryHolder query) {
+    public ModelAskQueryContext(Model model, QueryHolder query) {
         this.model = model;
         this.query = query;
     }
 
     @Override
-    public ConstructQueryContext bindVariableToUri(String name, String uri) {
-        return new ModelConstructQueryContext(model,
-                query.bindToUri(name, uri));
+    public AskQueryContext bindVariableToUri(String name, String uri) {
+        return new ModelAskQueryContext(model, query.bindToUri(name, uri));
     }
 
     @Override
-    public ConstructQueryContext bindVariableToPlainLiteral(String name,
+    public AskQueryContext bindVariableToPlainLiteral(String name,
             String value) {
-        return new ModelConstructQueryContext(model,
+        return new ModelAskQueryContext(model,
                 query.bindToPlainLiteral(name, value));
     }
 
     @Override
-    public ConstructQueryContext bindVariableToLiteral(String name,
-            Literal literal) {
-        return new ModelConstructQueryContext(model,
+    public AskQueryContext bindVariableToLiteral(String name, Literal literal) {
+        return new ModelAskQueryContext(model,
                 query.bindToLiteral(name, literal));
     }
 
     @Override
     public String toString() {
-        return "ModelConstructQueryContext[query=" + query + "]";
+        return "ModelAskQueryContext[query=" + query + "]";
     }
 
     @Override
-    public ExecutingConstructQueryContext execute() {
-        return new ModelExecutingConstructQueryContext(model, query);
+    public ExecutingAskQueryContext execute() {
+        return new ModelExecutingAskQueryContext(model, query);
     }
 
-    private static class ModelExecutingConstructQueryContext
-            implements ExecutingConstructQueryContext {
+    private static class ModelExecutingAskQueryContext
+            implements ExecutingAskQueryContext {
         private final Model model;
         private final QueryHolder query;
 
-        public ModelExecutingConstructQueryContext(Model model,
-                QueryHolder query) {
+        public ModelExecutingAskQueryContext(Model model, QueryHolder query) {
             this.model = model;
             this.query = query;
         }
 
         @Override
-        public Model toModel() {
+        public boolean toBoolean() {
             QueryExecution qe = null;
             try {
                 Query q = QueryFactory.create(query.getQueryString());
                 qe = QueryExecutionFactory.create(q, model);
-                return qe.execConstruct();
+                return qe.execAsk();
             } catch (Exception e) {
                 log.error("problem while running query '"
                         + query.getQueryString() + "'", e);
-                return ModelFactory.createDefaultModel();
+                return false;
             } finally {
                 if (qe != null) {
                     qe.close();
