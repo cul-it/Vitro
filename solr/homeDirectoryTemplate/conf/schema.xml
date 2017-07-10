@@ -313,6 +313,8 @@
    <dynamicField name="attr_*" type="text_general" indexed="true" stored="true" multiValued="true"/>
 
    <dynamicField name="random_*" type="random" />
+   
+   <dynamicField name="*_key" type="text_stemmed" indexed="true" stored="true" multiValued="true" omitNorms="true"/>
 
    <!-- uncomment the following to ignore any fields that don't already match an existing 
         field name or dynamic field, rather than reporting them as an error. 
